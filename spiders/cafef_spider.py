@@ -15,7 +15,7 @@ class CafefSpider(scrapy.Spider):
     def parse_category(self, response):
         if response.css('li.tlitem'):
             url = "http://cafef.vn/timeline/%s/trang-%s.chn"
-            for page in range(1, 11):
+            for page in range(1, 20):
                 replaceUrl = url % (response.meta['id'], page)
                 yield scrapy.Request(url=replaceUrl, callback=self.parse, priority=1, dont_filter=True)
 
