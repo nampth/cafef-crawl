@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
 import json
+import urllib.parse
 
 
 class BhxhSpider(scrapy.Spider):
@@ -29,34 +30,27 @@ class BhxhSpider(scrapy.Spider):
 
     def parse(self, response):
         cookie = response.headers.getlist('Set-Cookie')[0].decode('utf-8')
-        arr = cookie.split(";")
-        req_cookie = {
-            'ASP.NET_SessionId': arr[0].split("=")[1],
-            'path': '/; HttpOnly',
-        }
 
         file = open("/home/nam/demo/demo/img/1.jpg", 'wb')
         file.write(response.body)
         var = input("Captcha: ")
         self.frmdata['BL_Captcha'] = str(var)
 
-        self.log(cookie)
-        self.log(req_cookie)
-        self.log(self.frmdata)
         yield scrapy.Request(url=self.urls[1], callback=self.parse_response, method='POST',
-                             body=json.dumps(self.frmdata),
+                             body=urllib.parse.urlencode(self.frmdata),
                              # cookies=req_cookie,
                              headers={
-                             #     'Content-Type': 'application/x-www-form-urlencoded',
+                                 'Content-Type': 'application/x-www-form-urlencoded',
                                  'Cookies': cookie,
-                             #     'Host': 'baohiemxahoi.gov.vn',
-                             #     'Referer': 'https://baohiemxahoi.gov.vn/tracuu/Pages/tra-cuu-ho-gia-dinh.aspx',
-                             #     'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:65.0) Gecko/20100101 Firefox/65.0',
-                             #     'Accept': '*/*',
-                             #     'Accept-Encoding': 'gzip, deflate, br',
-                             #     'Accept-Language': 'en-US,en;q=0.5'
+                                 'Host': 'baohiemxahoi.gov.vn',
+                                 'Referer': 'https://baohiemxahoi.gov.vn/tracuu/Pages/tra-cuu-ho-gia-dinh.aspx',
+                                 'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:65.0) Gecko/20100101 Firefox/65.0',
+                                 'Accept': '*/*',
+                                 'Accept-Encoding': 'gzip, deflate, br',
+                                 'Accept-Language': 'en-US,en;q=0.5'
                              }
                              )
 
     def parse_response(self, response):
-        self.log(response.body)
+        for table in response.css("table#tableHoGiaDinh")[0:]:
+            self.log(table.css('td::text').getall())
